@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Лабораторна робота №3</title>
+  <style>
+    :root {
+      --bg:#f4efe6;
+      --paper:#fffdf8;
+      --paper-2:#faf5ec;
+      --ink:#2d261f;
+      --muted:#6b6258;
+      --line:#d9cfbe;
+      --accent:#6d4c41;
+      --accent-2:#8d6e63;
+      --shadow:0 14px 34px rgba(74, 52, 36, 0.10);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,.7), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(255,255,255,.45), transparent 30%),
+        linear-gradient(180deg, #efe8dc 0%, var(--bg) 100%);
+    }
+    .page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      width: 100%;
+      max-width: 760px;
+      background: linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 30px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid #c9baa4;
+      color: var(--accent);
+      background: rgba(255,255,255,.72);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      margin-bottom: 12px;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 34px;
+      line-height: 1.2;
+      color: #3b2d23;
+    }
+    p {
+      margin: 0 0 12px;
+      font-size: 18px;
+      line-height: 1.65;
+      color: var(--muted);
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .btn {
+      display: inline-block;
+      text-decoration: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: 700;
+      font-size: 15px;
+      transition: transform .15s ease, filter .15s ease;
+    }
+    .btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(.98);
+    }
+    .btn-primary {
+      color: #fff;
+      background: linear-gradient(180deg, var(--accent-2), var(--accent));
+    }
+    .btn-secondary {
+      color: #5e4a3d;
+      background: #efe7db;
+      border: 1px solid #d7c8b2;
+    }
+    code {
+      background:#f3ecdf;
+      padding:2px 6px;
+      border-radius:6px;
+      color:#5b4638;
+      border:1px solid #e2d6c3;
+    }
+    @media (max-width: 640px) {
+      h1 { font-size: 28px; }
+      p { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="card">
+      <div class="badge">Заглушка • Numerical Methods</div>
+      <h1>Лабораторна робота №10</h1>
+      <p>
+        Ця сторінка підготовлена як тимчасова заглушка для майбутнього вмісту.
+      </p>      
+      <div class="actions">
+        <a class="btn btn-primary" href="../index.html">Повернутися на головну</a>
+        <a class="btn btn-secondary" href="./">Оновити сторінку</a>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

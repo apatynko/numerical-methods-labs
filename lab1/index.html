@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Контроль знань — Кубічні сплайни</title>
+  <style>
+    :root{
+      --bg:#f3f0e8;
+      --paper:#fffdf8;
+      --paper-2:#f9f5ea;
+      --ink:#2f2a22;
+      --muted:#6e665a;
+      --line:#d8cfbf;
+      --accent:#6d4c41;
+      --accent-2:#8d6e63;
+      --good:#1b5e20;
+      --good-bg:#e8f5e9;
+      --bad:#b71c1c;
+      --bad-bg:#ffebee;
+      --chosen:#ede7f6;
+      --shadow:0 12px 28px rgba(72, 52, 36, 0.10);
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      color:var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,.65), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(255,255,255,.35), transparent 30%),
+        linear-gradient(180deg, #efe9dd 0%, var(--bg) 100%);
+    }
+
+    .page{
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 28px 16px 48px;
+    }
+
+    .hero, .question-card, .result{
+      background: linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero{
+      padding: 28px;
+      margin-bottom: 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(90deg, transparent 0 96%, rgba(109,76,65,.07) 96% 100%),
+        linear-gradient(transparent 0 96%, rgba(109,76,65,.05) 96% 100%);
+      background-size: 28px 28px;
+      pointer-events:none;
+      opacity:.45;
+    }
+
+    .hero-content{
+      position:relative;
+      z-index:1;
+    }
+
+    .badge{
+      display:inline-block;
+      padding:6px 12px;
+      border:1px solid #c7b9a5;
+      border-radius:999px;
+      font-size:13px;
+      letter-spacing:.4px;
+      text-transform:uppercase;
+      color:var(--accent);
+      background:rgba(255,255,255,.72);
+      margin-bottom:12px;
+      font-weight:700;
+    }
+
+    h1{
+      margin:0 0 10px;
+      font-size: 34px;
+      line-height:1.2;
+      color:#3e2f24;
+    }
+
+    .subtitle{
+      margin:0;
+      color:var(--muted);
+      font-size:17px;
+      line-height:1.6;
+      max-width:800px;
+    }
+
+    .actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:18px;
+      position:relative;
+      z-index:1;
+    }
+
+    button{
+      border:0;
+      border-radius:12px;
+      padding:12px 18px;
+      cursor:pointer;
+      font-size:16px;
+      font-weight:700;
+      font-family: inherit;
+      transition: transform .15s ease, filter .15s ease;
+    }
+
+    button:hover{
+      transform: translateY(-1px);
+      filter: brightness(.98);
+    }
+
+    .primary{
+      background: linear-gradient(180deg, var(--accent-2), var(--accent));
+      color:#fff;
+    }
+
+    .secondary{
+      background:#efe7db;
+      color:#5d4638;
+      border:1px solid #d5c7b2;
+    }
+
+    .warning{
+      display:none;
+      margin-top:16px;
+      padding:12px 14px;
+      border-radius:12px;
+      border:1px solid #e0c07b;
+      background:#fff4d8;
+      color:#7c5b1d;
+      position:relative;
+      z-index:1;
+    }
+
+    .quiz{
+      display:grid;
+      gap:16px;
+    }
+
+    .question-card{
+      padding:20px;
+    }
+
+    .question-top{
+      display:flex;
+      align-items:flex-start;
+      gap:14px;
+      margin-bottom:14px;
+    }
+
+    .number{
+      flex:0 0 auto;
+      width:40px;
+      height:40px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#efe7db;
+      border:1px solid #d3c5b0;
+      color:#5e483b;
+      font-weight:700;
+      font-size:18px;
+    }
+
+    .question-title{
+      margin:2px 0 0;
+      font-size:21px;
+      line-height:1.4;
+    }
+
+    .answers{
+      display:grid;
+      gap:10px;
+    }
+
+    .answer{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      border:1px solid #ddd2c2;
+      background: rgba(255,255,255,.72);
+      border-radius:14px;
+      padding:13px 14px;
+      cursor:pointer;
+      transition: all .2s ease;
+    }
+
+    .answer:hover{
+      background:#fff;
+      border-color:#c9b9a1;
+    }
+
+    .answer input{
+      margin-top:3px;
+      accent-color:#7b5b4c;
+      transform: scale(1.08);
+      pointer-events:none;
+    }
+
+    .answer-text{
+      line-height:1.55;
+      font-size:16px;
+    }
+
+    .answer.selected{
+      border-color:#b39ddb;
+      background:var(--chosen);
+    }
+
+    .answer.correct{
+      border-color:#81c784;
+      background:var(--good-bg);
+    }
+
+    .answer.incorrect{
+      border-color:#ef9a9a;
+      background:var(--bad-bg);
+    }
+
+    .result{
+      display:none;
+      margin-top:22px;
+      padding:20px;
+    }
+
+    .result h2{
+      margin:0 0 10px;
+      font-size:26px;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(190px,1fr));
+      gap:12px;
+      margin-top:14px;
+    }
+
+    .stat{
+      padding:14px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      font-weight:700;
+      font-size:17px;
+    }
+
+    .stat.good{background:var(--good-bg); color:var(--good);}
+    .stat.bad{background:var(--bad-bg); color:var(--bad);}
+    .stat.score{background:#ede7f6; color:#4527a0;}
+
+    .note{
+      margin-top:14px;
+      color:var(--muted);
+      line-height:1.55;
+      font-size:15px;
+    }
+
+    .footer{
+      margin-top:14px;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    @media (max-width: 640px){
+      h1{font-size:28px}
+      .hero{padding:22px}
+      .question-title{font-size:19px}
+      .answer-text{font-size:15px}
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <div class="hero-content">
+        <div class="badge">Лабораторна робота №1 • Чисельні методи</div>
+        <h1>Контроль знань: інтерполяція кубічними сплайнами</h1>
+        <p class="subtitle">
+          Оберіть <strong>одну</strong> правильну відповідь у кожному запитанні. Порядок
+          <strong>запитань сталий</strong>, але варіанти відповідей щоразу перемішуються.
+          Після перевірки правильні та неправильні вибори будуть підсвічені.
+        </p>
+
+        <div class="actions">
+          <button class="primary" id="checkBtn">Перевірити результат</button>
+          <button class="secondary" id="restartBtn">Перемішати варіанти відповідей</button>
+        </div>
+
+        <div class="warning" id="warning"></div>
+        <div class="result" id="result"></div>
+        <div class="footer">Автономний файл: HTML + CSS + JavaScript в одному документі.</div>
+      </div>
+    </section>
+
+    <main class="quiz" id="quiz"></main>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: "Що таке табуляція?",
+        answers: [
+          { text: "Це подання функції у вигляді набору значень у вибраних вузлах (таблиці значень аргументу та функції).", correct: true },
+          { text: "Це обов’язково процес розв’язування тридіагональної системи методом прогонки.", correct: false },
+          { text: "Це заміна функції лише лінійною формулою без використання вузлів.", correct: false }
+        ]
+      },
+      {
+        question: "Що таке інтерполяція?",
+        answers: [
+          { text: "Це знаходження проміжних значень функції за відомим дискретним набором її значень.", correct: true },
+          { text: "Це знаходження значень функції тільки поза межами відомого відрізка.", correct: false },
+          { text: "Це метод, який завжди замінює функцію сталою величиною.", correct: false }
+        ]
+      },
+      {
+        question: "Що таке кубічний сплайн?",
+        answers: [
+          { text: "Це кусочно-задана функція, на кожному інтервалі якої стоїть многочлен третього степеня, що проходить через вузли та має гладкі першу і другу похідні.", correct: true },
+          { text: "Це один єдиний многочлен першого степеня на всьому проміжку.", correct: false },
+          { text: "Це довільна ламана лінія між сусідніми вузлами без умов гладкості.", correct: false }
+        ]
+      },
+      {
+        question: "Яка система рівнянь виникає при побудові сплайна?",
+        answers: [
+          { text: "Виникає система лінійних алгебраїчних рівнянь із тридіагональною матрицею для знаходження коефіцієнтів сплайна.", correct: true },
+          { text: "Виникає лише одне квадратне рівняння для кожного вузла без зв’язку між ними.", correct: false },
+          { text: "Виникає система нелінійних експоненціальних рівнянь з повною матрицею.", correct: false }
+        ]
+      },
+      {
+        question: "Що таке метод прогонки?",
+        answers: [
+          { text: "Це чисельний метод розв’язування тридіагональних систем, який складається з прямого та зворотного ходу.", correct: true },
+          { text: "Це метод сортування вузлів інтерполяції за спаданням.", correct: false },
+          { text: "Це спосіб побудови графіка без обчислення коефіцієнтів.", correct: false }
+        ]
+      },
+      {
+        question: "Який порядок точності кубічного сплайна?",
+        answers: [
+          { text: "Порядок точності кубічного сплайна зазвичай становить O(h^4) для достатньо гладкої функції.", correct: true },
+          { text: "Порядок точності завжди дорівнює O(h).", correct: false },
+          { text: "Кубічний сплайн не має жодного порядку точності, бо це лише графічний метод.", correct: false }
+        ]
+      },
+      {
+        question: "Які коефіцієнти визначаються при побудові кубічного сплайна та як вони обчислюються?",
+        answers: [
+          { text: "Для кожного інтервалу визначаються коефіцієнти a, b, c, d; їх знаходять із умов інтерполяції, гладкості та розв’язку тридіагональної системи.", correct: true },
+          { text: "Визначається тільки один коефіцієнт a, решта завжди дорівнюють нулю.", correct: false },
+          { text: "Коефіцієнти обираються випадково, головне щоб графік був схожий на плавний.", correct: false }
+        ]
+      }
+    ];
+
+    const quizEl = document.getElementById('quiz');
+    const resultEl = document.getElementById('result');
+    const warningEl = document.getElementById('warning');
+    const checkBtn = document.getElementById('checkBtn');
+    const restartBtn = document.getElementById('restartBtn');
+
+    let wasChecked = false;
+
+    function shuffle(arr){
+      const copy = [...arr];
+      for(let i = copy.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function renderQuiz(){
+      wasChecked = false;
+      quizEl.innerHTML = '';
+      resultEl.style.display = 'none';
+      warningEl.style.display = 'none';
+
+      questions.forEach((q, index) => {
+        const card = document.createElement('section');
+        card.className = 'question-card';
+
+        const top = document.createElement('div');
+        top.className = 'question-top';
+
+        const number = document.createElement('div');
+        number.className = 'number';
+        number.textContent = String(index + 1);
+
+        const title = document.createElement('h2');
+        title.className = 'question-title';
+        title.textContent = q.question;
+
+        top.appendChild(number);
+        top.appendChild(title);
+
+        const answersWrap = document.createElement('div');
+        answersWrap.className = 'answers';
+
+        shuffle(q.answers).forEach((ans, ansIndex) => {
+          const id = `q${index}_a${ansIndex}`;
+
+          const label = document.createElement('label');
+          label.className = 'answer';
+          label.setAttribute('for', id);
+          label.dataset.correct = ans.correct ? '1' : '0';
+
+          const input = document.createElement('input');
+          input.type = 'radio';
+          input.name = `question_${index}`;
+          input.id = id;
+          input.value = ans.correct ? '1' : '0';
+
+          input.addEventListener('change', () => {
+            const all = answersWrap.querySelectorAll('.answer');
+            all.forEach(item => item.classList.remove('selected'));
+            label.classList.add('selected');
+
+            if (wasChecked) {
+              updateVisualState(card);
+            }
+          });
+
+          const text = document.createElement('div');
+          text.className = 'answer-text';
+          text.textContent = ans.text;
+
+          label.appendChild(input);
+          label.appendChild(text);
+          answersWrap.appendChild(label);
+        });
+
+        card.appendChild(top);
+        card.appendChild(answersWrap);
+        quizEl.appendChild(card);
+      });
+    }
+
+    function updateVisualState(card){
+      const options = card.querySelectorAll('.answer');
+      const checked = card.querySelector('input:checked');
+
+      options.forEach(option => {
+        option.classList.remove('correct', 'incorrect');
+        if (option.dataset.correct === '1') {
+          option.classList.add('correct');
+        }
+      });
+
+      if (checked) {
+        const chosen = checked.closest('.answer');
+        if (chosen.dataset.correct !== '1') {
+          chosen.classList.add('incorrect');
+        }
+      }
+    }
+
+    function checkAnswers(){
+      const questionCards = [...document.querySelectorAll('.question-card')];
+      let correct = 0;
+      let unanswered = 0;
+
+      questionCards.forEach((card, index) => {
+        const checked = card.querySelector(`input[name="question_${index}"]:checked`);
+        if (!checked) {
+          unanswered++;
+          return;
+        }
+        if (checked.value === '1') {
+          correct++;
+        }
+      });
+
+      if (unanswered > 0) {
+        warningEl.textContent = `Ви ще не відповіли на ${unanswered} запит. Потрібно обрати по одній відповіді для всіх 7 запитань.`;
+        warningEl.style.display = 'block';
+        resultEl.style.display = 'none';
+        return;
+      }
+
+      warningEl.style.display = 'none';
+      wasChecked = true;
+
+      questionCards.forEach(card => updateVisualState(card));
+
+      const wrong = questionCards.length - correct;
+      const percent = Math.round((correct / questionCards.length) * 100);
+
+      resultEl.innerHTML = `
+        <h2>Результат тестування</h2>
+        <div class="stats">
+          <div class="stat good">Правильних: ${correct}</div>
+          <div class="stat bad">Неправильних: ${wrong}</div>
+          <div class="stat score">Успішність: ${percent}%</div>
+        </div>
+        <div class="note">
+          Питання залишаються в тому самому порядку. Щоб отримати новий набір розташування
+          відповідей, оновіть сторінку або натисніть <strong>«Перемішати варіанти відповідей»</strong>.
+        </div>
+      `;
+      resultEl.style.display = 'block';
+      resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    checkBtn.addEventListener('click', checkAnswers);
+    restartBtn.addEventListener('click', renderQuiz);
+
+    renderQuiz();
+  </script>
+</body>
+</html>
