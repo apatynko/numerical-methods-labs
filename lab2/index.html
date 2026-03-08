@@ -3,76 +3,70 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Лабораторна робота №2</title>
+  <title>Контроль знань — Розділені різниці та многочлен Ньютона</title>
   <style>
-    :root {
-      --bg:#f4efe6;
+    :root{
+      --bg:#f3f0e8;
       --paper:#fffdf8;
-      --paper-2:#faf5ec;
-      --ink:#2d261f;
-      --muted:#6b6258;
-      --line:#d9cfbe;
+      --paper-2:#f9f5ea;
+      --ink:#2f2a22;
+      --muted:#6e665a;
+      --line:#d8cfbf;
       --accent:#6d4c41;
       --accent-2:#8d6e63;
-      --shadow:0 14px 34px rgba(74, 52, 36, 0.10);
+      --good:#1b5e20;
+      --good-bg:#e8f5e9;
+      --bad:#b71c1c;
+      --bad-bg:#ffebee;
+      --chosen:#ede7f6;
+      --shadow:0 12px 28px rgba(72, 52, 36, 0.10);
     }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      color:var(--ink);
       font-family: Georgia, "Times New Roman", serif;
-      color: var(--ink);
       background:
-        radial-gradient(circle at top left, rgba(255,255,255,.7), transparent 30%),
-        radial-gradient(circle at bottom right, rgba(255,255,255,.45), transparent 30%),
-        linear-gradient(180deg, #efe8dc 0%, var(--bg) 100%);
+        radial-gradient(circle at top left, rgba(255,255,255,.65), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(255,255,255,.35), transparent 30%),
+        linear-gradient(180deg, #efe9dd 0%, var(--bg) 100%);
     }
-    .page {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-    .card {
-      width: 100%;
-      max-width: 760px;
+    .page{ max-width: 980px; margin: 0 auto; padding: 28px 16px 48px; }
+    .hero, .question-card, .result{
       background: linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
       border: 1px solid var(--line);
-      border-radius: 20px;
+      border-radius: 18px;
       box-shadow: var(--shadow);
-      padding: 30px;
     }
-    .badge {
-      display: inline-block;
-      padding: 6px 12px;
-      border-radius: 999px;
-      border: 1px solid #c9baa4;
-      color: var(--accent);
-      background: rgba(255,255,255,.72);
-      font-size: 13px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .4px;
-      margin-bottom: 12px;
+    .hero{ padding: 28px; margin-bottom: 22px; position: relative; overflow: hidden; }
+    .hero::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(90deg, transparent 0 96%, rgba(109,76,65,.07) 96% 100%),
+        linear-gradient(transparent 0 96%, rgba(109,76,65,.05) 96% 100%);
+      background-size: 28px 28px;
+      pointer-events:none;
+      opacity:.45;
     }
-    h1 {
-      margin: 0 0 12px;
-      font-size: 34px;
-      line-height: 1.2;
-      color: #3b2d23;
+    .hero-content{ position:relative; z-index:1; }
+    .badge{
+      display:inline-block;
+      padding:6px 12px;
+      border:1px solid #c7b9a5;
+      border-radius:999px;
+      font-size:13px;
+      letter-spacing:.4px;
+      text-transform:uppercase;
+      color:var(--accent);
+      background:rgba(255,255,255,.72);
+      margin-bottom:12px;
+      font-weight:700;
     }
-    p {
-      margin: 0 0 12px;
-      font-size: 18px;
-      line-height: 1.65;
-      color: var(--muted);
-    }
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 20px;
-    }
+    h1{ margin:0 0 10px; font-size: 34px; line-height:1.2; color:#3e2f24; }
+    .subtitle{ margin:0; color:var(--muted); font-size:17px; line-height:1.6; max-width:800px; }
+    .actions{ display:flex; flex-wrap:wrap; gap:12px; margin-top:18px; position:relative; z-index:1; }
     .btn {
       display: inline-block;
       text-decoration: none;
@@ -82,45 +76,318 @@
       font-size: 15px;
       transition: transform .15s ease, filter .15s ease;
     }
-    .btn:hover {
-      transform: translateY(-1px);
-      filter: brightness(.98);
+    .btn:hover { transform: translateY(-1px); filter: brightness(.98); }
+    .btn-primary { color: #fff; background: linear-gradient(180deg, var(--accent-2), var(--accent)); }
+    .btn-secondary { color: #5e4a3d; background: #efe7db; border: 1px solid #d7c8b2; }
+
+    button{
+      border:0; border-radius:12px; padding:12px 18px; cursor:pointer;
+      font-size:16px; font-weight:700; font-family: inherit;
+      transition: transform .15s ease, filter .15s ease;
     }
-    .btn-primary {
-      color: #fff;
-      background: linear-gradient(180deg, var(--accent-2), var(--accent));
+    button:hover{ transform: translateY(-1px); filter: brightness(.98); }
+    .primary{ background: linear-gradient(180deg, var(--accent-2), var(--accent)); color:#fff; }
+    .secondary{ background:#efe7db; color:#5d4638; border:1px solid #d5c7b2; }
+
+    .warning{
+      display:none; margin-top:16px; padding:12px 14px; border-radius:12px;
+      border:1px solid #e0c07b; background:#fff4d8; color:#7c5b1d; position:relative; z-index:1;
     }
-    .btn-secondary {
-      color: #5e4a3d;
-      background: #efe7db;
-      border: 1px solid #d7c8b2;
+
+    .quiz{ display:grid; gap:16px; }
+    .question-card{ padding:20px; }
+
+    .question-top{ display:flex; align-items:flex-start; gap:14px; margin-bottom:14px; }
+
+    .number{
+      flex:0 0 auto; width:40px; height:40px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      background:#efe7db; border:1px solid #d3c5b0; color:#5e483b;
+      font-weight:700; font-size:18px;
     }
-    code {
-      background:#f3ecdf;
-      padding:2px 6px;
-      border-radius:6px;
-      color:#5b4638;
-      border:1px solid #e2d6c3;
+
+    .question-title{ margin:2px 0 0; font-size:21px; line-height:1.4; }
+    .answers{ display:grid; gap:10px; }
+
+    .answer{
+      display:flex; align-items:flex-start; gap:12px;
+      border:1px solid #ddd2c2; background: rgba(255,255,255,.72);
+      border-radius:14px; padding:13px 14px; cursor:pointer;
+      transition: all .2s ease;
     }
-    @media (max-width: 640px) {
-      h1 { font-size: 28px; }
-      p { font-size: 16px; }
+    .answer:hover{ background:#fff; border-color:#c9b9a1; }
+
+    .answer input{
+      margin-top:3px; accent-color:#7b5b4c;
+      transform: scale(1.08); pointer-events:none;
+    }
+    .answer-text{ line-height:1.55; font-size:16px; }
+
+    .answer.selected{ border-color:#b39ddb; background:var(--chosen); }
+    .answer.correct{ border-color:#81c784; background:var(--good-bg); }
+    .answer.incorrect{ border-color:#ef9a9a; background:var(--bad-bg); }
+
+    .result{ display:none; margin-top:22px; padding:20px; }
+    .result h2{ margin:0 0 10px; font-size:26px; }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(190px,1fr));
+      gap:12px;
+      margin-top:14px;
+    }
+    .stat{
+      padding:14px; border-radius:14px; border:1px solid var(--line);
+      font-weight:700; font-size:17px;
+    }
+    .stat.good{background:var(--good-bg); color:var(--good);}
+    .stat.bad{background:var(--bad-bg); color:var(--bad);}
+    .stat.score{background:#ede7f6; color:#4527a0;}
+
+    .note{ margin-top:14px; color:var(--muted); line-height:1.55; font-size:15px; }
+
+    @media (max-width: 640px){
+      h1{font-size:28px}
+      .hero{padding:22px}
+      .question-title{font-size:19px}
+      .answer-text{font-size:15px}
     }
   </style>
 </head>
 <body>
   <div class="page">
+    <section class="hero">
+      <div class="hero-content">
+        <div class="badge">Лабораторна робота №2 • Чисельні методи</div>
+        <h1>Контроль знань: розділені різниці та многочлени Ньютона</h1>
+        <p class="subtitle">
+          Оберіть <strong>одну</strong> правильну відповідь у кожному запитанні.
+          Порядок <strong>запитань сталий</strong>, але варіанти відповідей щоразу перемішуються.
+          Після перевірки правильні та неправильні вибори будуть підсвічені.
+        </p>
+
+        <div class="actions">
+          <button class="primary" id="checkBtn">Перевірити результат</button>
+          <button class="secondary" id="restartBtn">Перемішати варіанти відповідей</button>
+        </div>
+
+        <div class="warning" id="warning"></div>
+        <div class="result" id="result"></div>
+      </div>
+    </section>
+
+    <main class="quiz" id="quiz"></main>
+
     <section class="card">
-      <div class="badge">Заглушка • Numerical Methods</div>
-      <h1>Лабораторна робота №2</h1>
-      <p>
-        Ця сторінка підготовлена як тимчасова заглушка для майбутнього вмісту.
-      </p>      
       <div class="actions">
         <a class="btn btn-primary" href="../index.html">Повернутися на головну</a>
         <a class="btn btn-secondary" href="./">Оновити сторінку</a>
       </div>
     </section>
   </div>
+
+  <script>
+    const questions = [
+      {
+        question: "1. Що називається інтерполяцією? У чому її відмінність від екстраполяції?",
+        answers: [
+          { text: "Інтерполяція — знаходження значень усередині відрізка за відомими вузлами; екстраполяція — прогноз поза межами відомого інтервалу.", correct: true },
+          { text: "Інтерполяція — це завжди знаходження значень поза інтервалом, а екстраполяція — лише всередині нього.", correct: false },
+          { text: "Інтерполяція і екстраполяція — це одне й те саме поняття, різниці немає.", correct: false }
+        ]
+      },
+      {
+        question: "2. У яких випадках застосовується інтерполяційний многочлен?",
+        answers: [
+          { text: "Коли функція задана таблично (дискретними значеннями), і потрібно наближено обчислювати її значення між вузлами.", correct: true },
+          { text: "Тільки для знаходження коренів рівнянь методом ділення навпіл.", correct: false },
+          { text: "Лише для інтегрування, коли значення функції відомі аналітично.", correct: false }
+        ]
+      },
+      {
+        question: "3. Що таке вузли інтерполяції?",
+        answers: [
+          { text: "Це задані точки (x_i, y_i), через які має проходити інтерполяційний многочлен.", correct: true },
+          { text: "Це будь-які точки, які обов’язково лежать поза відрізком інтерполяції.", correct: false },
+          { text: "Це лише значення y_i без відповідних x_i.", correct: false }
+        ]
+      },
+      {
+        question: "4. Яка максимальна степінь інтерполяційного многочлена при n+1 вузлах?",
+        answers: [
+          { text: "Не перевищує n (максимальна степінь — n).", correct: true },
+          { text: "Не перевищує n+1.", correct: false },
+          { text: "Завжди дорівнює 2n.", correct: false }
+        ]
+      },
+      {
+        question: "5. У чому полягає метод Ньютона?",
+        answers: [
+          { text: "У побудові інтерполяційного многочлена у формі Ньютона з коефіцієнтами-розділеними різницями.", correct: true },
+          { text: "У розв’язуванні системи лінійних рівнянь методом Гауса без використання інтерполяції.", correct: false },
+          { text: "У знаходженні похідної функції за визначенням границі.", correct: false }
+        ]
+      },
+      {
+        question: "6. Як формується таблиця розділених різниць?",
+        answers: [
+          { text: "Перший стовпець — значення f(x_i); далі обчислюють різниці вищих порядків рекурентно за формулою, ділячи різницю попереднього порядку на різницю відповідних x.", correct: true },
+          { text: "Спочатку знаходять лише другу похідну, а потім з неї будують усі стовпці таблиці.", correct: false },
+          { text: "Беруть різниці лише між сусідніми y і ніколи не ділять на різницю x.", correct: false }
+        ]
+      },
+      {
+        question: "7. Які переваги має форма Ньютона порівняно з формою Лагранжа?",
+        answers: [
+          { text: "Зручна для обчислень через таблицю розділених різниць і дозволяє легко оновлювати многочлен при додаванні вузлів.", correct: true },
+          { text: "Завжди дає меншу похибку, незалежно від вузлів і функції.", correct: false },
+          { text: "Не потребує жодних обчислень коефіцієнтів — відповіді отримують одразу.", correct: false }
+        ]
+      },
+      {
+        question: "8. Чому форма Ньютона зручна при додаванні нових вузлів?",
+        answers: [
+          { text: "Достатньо додати новий коефіцієнт (нову розділену різницю) і один додатковий множник, не перераховуючи весь многочлен з нуля.", correct: true },
+          { text: "Тому що при додаванні вузлів степінь многочлена не змінюється.", correct: false },
+          { text: "Тому що нові вузли автоматично роблять усі попередні коефіцієнти рівними нулю.", correct: false }
+        ]
+      }
+    ];
+
+    const quizEl = document.getElementById('quiz');
+    const resultEl = document.getElementById('result');
+    const warningEl = document.getElementById('warning');
+    const checkBtn = document.getElementById('checkBtn');
+    const restartBtn = document.getElementById('restartBtn');
+
+    let shuffledQuestions = [];
+    let userAnswers = new Map(); // qIndex -> chosenAnswerIndex
+
+    function shuffleArray(arr){
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function renderQuiz(){
+      quizEl.innerHTML = "";
+      resultEl.style.display = "none";
+      warningEl.style.display = "none";
+      userAnswers.clear();
+
+      // fixed order of questions, but shuffle answers inside each question
+      shuffledQuestions = questions.map(q => ({
+        question: q.question,
+        answers: shuffleArray(q.answers)
+      }));
+
+      shuffledQuestions.forEach((q, qIndex) => {
+        const card = document.createElement('section');
+        card.className = 'question-card';
+
+        const top = document.createElement('div');
+        top.className = 'question-top';
+
+        const number = document.createElement('div');
+        number.className = 'number';
+        number.textContent = (qIndex + 1).toString();
+
+        const title = document.createElement('h3');
+        title.className = 'question-title';
+        title.textContent = q.question;
+
+        top.appendChild(number);
+        top.appendChild(title);
+
+        const answersWrap = document.createElement('div');
+        answersWrap.className = 'answers';
+
+        q.answers.forEach((ans, aIndex) => {
+          const label = document.createElement('label');
+          label.className = 'answer';
+
+          const input = document.createElement('input');
+          input.type = 'radio';
+          input.name = `q_${qIndex}`;
+          input.value = aIndex;
+
+          const span = document.createElement('span');
+          span.className = 'answer-text';
+          span.textContent = ans.text;
+
+          label.appendChild(input);
+          label.appendChild(span);
+
+          label.addEventListener('click', () => {
+            [...answersWrap.querySelectorAll('.answer')].forEach(x => x.classList.remove('selected'));
+            label.classList.add('selected');
+            input.checked = true;
+            userAnswers.set(qIndex, aIndex);
+          });
+
+          answersWrap.appendChild(label);
+        });
+
+        card.appendChild(top);
+        card.appendChild(answersWrap);
+        quizEl.appendChild(card);
+      });
+    }
+
+    function grade(){
+      if (userAnswers.size !== shuffledQuestions.length){
+        warningEl.style.display = "block";
+        warningEl.textContent = "Будь ласка, дайте відповідь на всі запитання перед перевіркою.";
+        return;
+      }
+      warningEl.style.display = "none";
+
+      let correct = 0;
+
+      shuffledQuestions.forEach((q, qIndex) => {
+        const chosen = userAnswers.get(qIndex);
+        const cards = quizEl.querySelectorAll('.question-card');
+        const answersWrap = cards[qIndex].querySelector('.answers');
+        const answerEls = answersWrap.querySelectorAll('.answer');
+
+        // lock inputs
+        answersWrap.querySelectorAll('input').forEach(inp => inp.disabled = true);
+
+        q.answers.forEach((ans, aIndex) => {
+          const el = answerEls[aIndex];
+          el.classList.remove('selected');
+          if (ans.correct) el.classList.add('correct');
+          if (aIndex === chosen && !ans.correct) el.classList.add('incorrect');
+        });
+
+        if (q.answers[chosen].correct) correct += 1;
+      });
+
+      const total = shuffledQuestions.length;
+      const incorrect = total - correct;
+      const scorePct = Math.round((correct / total) * 100);
+
+      resultEl.style.display = "block";
+      resultEl.innerHTML = `
+        <h2>Результат</h2>
+        <div class="stats">
+          <div class="stat good">Правильні: ${correct}</div>
+          <div class="stat bad">Неправильні: ${incorrect}</div>
+          <div class="stat score">Оцінка: ${scorePct}%</div>
+        </div>
+        <div class="note">
+          Порада: натисніть <strong>«Перемішати варіанти відповідей»</strong>, щоб спробувати ще раз (варіанти у відповідях змінять порядок).
+        </div>
+      `;
+    }
+
+    checkBtn.addEventListener('click', grade);
+    restartBtn.addEventListener('click', renderQuiz);
+
+    renderQuiz();
+  </script>
 </body>
 </html>
