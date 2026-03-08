@@ -115,6 +115,22 @@
       gap: 12px;
       margin-top: 20px;
     }
+    .actions.actions-split{
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.actions-left{
+  display:flex;
+  gap:12px;
+}
+
+.actions-right{
+  display:flex;
+  gap:12px;
+  margin-left:auto;
+}
     .btn {
       display: inline-block;
       text-decoration: none;
@@ -306,11 +322,22 @@
       font-size:14px;
     }
 
-    @media (max-width: 640px){
+  @media (max-width: 640px){
       h1{font-size:28px}
       .hero{padding:22px}
       .question-title{font-size:19px}
       .answer-text{font-size:15px}
+    }
+	@media (max-width: 640px){
+      .actions.actions-split{
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .actions-right{
+        margin-left:0;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+      }
     }
   </style>
 </head>
@@ -338,9 +365,15 @@
 
     <main class="quiz" id="quiz"></main>
     <section class="card">      
-      <div class="actions">
-        <a class="btn btn-primary" href="../index.html">Повернутися на головну</a>
-        <a class="btn btn-secondary" href="./">Оновити сторінку</a>
+      <div class="actions actions-split">
+        <div class="actions-left">
+          <button class="primary" id="checkBtn">Перевірити результат</button>
+        </div>
+        
+        <div class="actions-right">
+          <a class="btn btn-primary" href="../index.html">Повернутися на головну</a>
+          <a class="btn btn-secondary" href="./">Оновити сторінку</a>
+        </div>
       </div>
     </section>
   </div>
