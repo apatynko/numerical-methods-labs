@@ -208,7 +208,7 @@
     <section class="card">
       <div class="actions actions-split">
         <div class="actions-left">
-          <button class="primary" id="checkBtn">Перевірити результат</button>
+          <button class="primary" id="checkBtnBottom">Перевірити результат</button>
         </div>
         
         <div class="actions-right">
@@ -291,6 +291,7 @@
     const resultEl = document.getElementById('result');
     const warningEl = document.getElementById('warning');
     const checkBtn = document.getElementById('checkBtn');
+    const checkBtnBottom = document.getElementById('checkBtnBottom');
     const restartBtn = document.getElementById('restartBtn');
 
     let shuffledQuestions = [];
@@ -416,8 +417,10 @@
         </div>
       `;
     }
-
-    checkBtn.addEventListener('click', grade);
+    
+	[checkBtn, checkBtnBottom].filter(Boolean).forEach(btn => {
+      btn.addEventListener('click', grade);
+    });
     restartBtn.addEventListener('click', renderQuiz);
 
     renderQuiz();
