@@ -196,6 +196,7 @@
         <div class="actions">
           <button class="primary" id="checkBtn">Перевірити результат</button>
           <button class="secondary" id="restartBtn">Перемішати варіанти відповідей</button>
+          <button class="secondary" id="exampleBtn">Приклад</button>
         </div>
 
         <div class="warning" id="warning"></div>
@@ -293,6 +294,7 @@
     const checkBtn = document.getElementById('checkBtn');
     const checkBtnBottom = document.getElementById('checkBtnBottom');
     const restartBtn = document.getElementById('restartBtn');
+    const exampleBtn = document.getElementById('exampleBtn');
 
     let shuffledQuestions = [];
     let userAnswers = new Map(); // qIndex -> chosenAnswerIndex
@@ -423,6 +425,9 @@
       btn.addEventListener('click', grade);
     });
     restartBtn.addEventListener('click', renderQuiz);
+    exampleBtn?.addEventListener('click', () => {
+      window.open('example1.html', '_blank', 'noopener,noreferrer');
+    });
 
     renderQuiz();
   </script>

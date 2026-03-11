@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Лабораторна робота №2 — Інтерполяція Ньютона та факторіальні многочлени</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap');
+
+    :root {
+      --bg: #0c0f1a;
+      --surface: #151929;
+      --surface2: #1c2137;
+      --border: #2a3050;
+      --accent: #6ee7b7;
+      --accent2: #38bdf8;
+      --accent3: #f472b6;
+      --accent4: #fbbf24;
+      --text: #e2e8f0;
+      --text-dim: #8892b0;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Nunito', sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.65;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #0f1628 0%, #162040 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 2.5rem 2rem 2rem;
+      text-align: center;
+    }
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: .35rem;
+    }
+    header p { color: var(--text-dim); font-size: .92rem; }
+    .variant-badge {
+      display: inline-block;
+      background: rgba(110,231,183,.12);
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: .78rem;
+      font-weight: 600;
+      padding: .25rem .75rem;
+      border-radius: 999px;
+      border: 1px solid rgba(110,231,183,.25);
+      margin-bottom: .6rem;
+    }
+
+    /* ── Layout ── */
+    .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+    @media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.4rem;
+      margin-bottom: 1.25rem;
+    }
+    .card h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: .8rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .card h2 .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      font-size: .85rem;
+    }
+    .icon-green  { background: rgba(110,231,183,.14); color: var(--accent); }
+    .icon-blue   { background: rgba(56,189,248,.14);  color: var(--accent2); }
+    .icon-pink   { background: rgba(244,114,182,.14); color: var(--accent3); }
+    .icon-yellow { background: rgba(251,191,36,.14);  color: var(--accent4); }
+
+    /* ── Data Table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--mono);
+      font-size: .82rem;
+    }
+    th, td {
+      padding: .5rem .7rem;
+      text-align: right;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      color: var(--text-dim);
+      font-weight: 600;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+    td { color: var(--text); }
+    tr:last-child td { border-bottom: none; }
+
+    /* ── Result boxes ── */
+    .result-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.2rem;
+      margin-top: .8rem;
+      font-family: var(--mono);
+      font-size: .85rem;
+    }
+    .result-box .label {
+      color: var(--text-dim);
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: .25rem;
+    }
+    .result-box .value {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+    .val-green  { color: var(--accent); }
+    .val-blue   { color: var(--accent2); }
+    .val-pink   { color: var(--accent3); }
+    .val-yellow { color: var(--accent4); }
+
+    .result-row {
+      display: flex;
+      gap: .8rem;
+      flex-wrap: wrap;
+    }
+    .result-row .result-box { flex: 1; min-width: 150px; }
+
+    /* ── Charts ── */
+    .chart-wrap {
+      position: relative;
+      width: 100%;
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-top: .6rem;
+    }
+    canvas { width: 100% !important; }
+
+    /* ── Divided diff table ── */
+    .diff-table-wrap {
+      overflow-x: auto;
+      margin-top: .6rem;
+    }
+    .diff-table-wrap table { min-width: 500px; }
+    .diff-table-wrap td.highlight {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* ── Controls ── */
+    .controls {
+      display: flex;
+      gap: .8rem;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: .8rem;
+    }
+    label.ctrl {
+      color: var(--text-dim);
+      font-size: .82rem;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+    input[type="number"] {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: .85rem;
+      border-radius: 6px;
+      padding: .35rem .5rem;
+      width: 90px;
+      outline: none;
+    }
+    input[type="number"]:focus { border-color: var(--accent); }
+    button.btn {
+      background: linear-gradient(135deg, var(--accent), #34d399);
+      color: #0c0f1a;
+      border: none;
+      border-radius: 8px;
+      padding: .5rem 1.2rem;
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: .85rem;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+    }
+    button.btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(110,231,183,.25);
+    }
+    button.btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    button.btn-outline:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      box-shadow: none;
+      transform: none;
+    }
+
+    /* ── Formula display ── */
+    .formula {
+      background: var(--surface2);
+      border-left: 3px solid var(--accent2);
+      padding: .8rem 1rem;
+      margin: .6rem 0;
+      font-family: var(--mono);
+      font-size: .8rem;
+      color: var(--accent2);
+      border-radius: 0 6px 6px 0;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 1rem;
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 3px;
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: .5rem;
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all .2s;
+    }
+    .tab.active {
+      background: var(--surface);
+      color: var(--accent);
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── Node visualisation strip ── */
+    .node-strip {
+      position: relative;
+      height: 56px;
+      background: var(--surface2);
+      border-radius: 8px;
+      margin-top: .6rem;
+      overflow: hidden;
+    }
+    .node-strip .axis {
+      position: absolute;
+      top: 50%;
+      left: 5%;
+      right: 5%;
+      height: 2px;
+      background: var(--border);
+    }
+    .node-strip .tick {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      background: var(--bg);
+      z-index: 2;
+      transition: all .3s;
+    }
+    .node-strip .tick.active {
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(110,231,183,.5);
+    }
+    .node-strip .tick-label {
+      position: absolute;
+      top: calc(50% + 14px);
+      transform: translateX(-50%);
+      font-family: var(--mono);
+      font-size: .62rem;
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+
+    .section-title {
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin: 1.5rem 0 .6rem;
+    }
+
+    .error-note {
+      font-size: .78rem;
+      color: var(--text-dim);
+      margin-top: .4rem;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--surface); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="variant-badge">Варіант 1</div>
+  <h1>Інтерполяція Ньютона та факторіальні многочлени</h1>
+  <p>Прогнозування часу виконання алгоритму</p>
+</header>
+
+<div class="container">
+
+  <!-- ── Input Data ── -->
+  <div class="card">
+    <h2><span class="icon icon-green">📊</span> Вхідні дані</h2>
+    <p style="color:var(--text-dim);font-size:.85rem;margin-bottom:.8rem;">
+      Результати профілювання: залежність часу виконання алгоритму від розміру вхідних даних.
+    </p>
+
+    <div class="grid-2">
+      <div>
+        <table id="inputTable">
+          <thead>
+            <tr><th>n (розмір)</th><th>t (мс)</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div>
+        <div style="color:var(--text-dim);font-size:.82rem;margin-bottom:.4rem;">Розбиття на вузли</div>
+        <div class="node-strip" id="nodeStrip">
+          <div class="axis"></div>
+        </div>
+        <div class="chart-wrap" style="margin-top:.8rem;">
+          <canvas id="chartInput" height="180"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Prediction control ── -->
+  <div class="card">
+    <h2><span class="icon icon-blue">🎯</span> Прогнозування</h2>
+    <div class="controls">
+      <label class="ctrl">
+        n =
+        <input type="number" id="predictN" value="6000" min="0" max="100000" step="100">
+      </label>
+      <button class="btn" onclick="runPrediction()">Обчислити</button>
+    </div>
+    <div class="result-row" id="predictionResults">
+      <div class="result-box">
+        <div class="label">Многочлен Ньютона</div>
+        <div class="value val-green" id="resNewton">—</div>
+      </div>
+      <div class="result-box">
+        <div class="label">Факторіальні многочлени</div>
+        <div class="value val-blue" id="resFactorial">—</div>
+      </div>
+      <div class="result-box">
+        <div class="label">Різниця методів</div>
+        <div class="value val-pink" id="resDiff">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Divided Differences ── -->
+  <div class="card">
+    <h2><span class="icon icon-yellow">📐</span> Таблиця розділених різниць</h2>
+    <div class="diff-table-wrap">
+      <table id="diffTable"></table>
+    </div>
+    <div class="formula" id="newtonFormula"></div>
+  </div>
+
+  <!-- ── Finite Differences (for factorial polynomials) ── -->
+  <div class="card">
+    <h2><span class="icon icon-pink">🔢</span> Таблиця скінченних різниць (рівномірна сітка)</h2>
+    <p class="error-note" style="margin-bottom:.6rem;">
+      Для факторіальних многочленів створюємо рівномірну сітку з кроком h та обчислюємо скінченні різниці.
+    </p>
+    <div class="diff-table-wrap">
+      <table id="finiteDiffTable"></table>
+    </div>
+    <div class="formula" id="factorialFormula"></div>
+  </div>
+
+  <!-- ── Charts ── -->
+  <div class="card">
+    <h2><span class="icon icon-green">📈</span> Графіки інтерполяції</h2>
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(this, 'tabMain')">Основний графік</div>
+      <div class="tab" onclick="switchTab(this, 'tabError')">Похибка</div>
+      <div class="tab" onclick="switchTab(this, 'tabNodes')">Вплив вузлів</div>
+    </div>
+
+    <div id="tabMain" class="tab-content active">
+      <div class="chart-wrap">
+        <canvas id="chartMain" height="320"></canvas>
+      </div>
+    </div>
+    <div id="tabError" class="tab-content">
+      <div class="chart-wrap">
+        <canvas id="chartError" height="320"></canvas>
+      </div>
+    </div>
+    <div id="tabNodes" class="tab-content">
+      <p style="color:var(--text-dim);font-size:.82rem;margin-bottom:.6rem;">
+        Порівняння інтерполяції з 3, 4 та 5 вузлами
+      </p>
+      <div class="chart-wrap">
+        <canvas id="chartNodes" height="320"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Study: 5 / 10 / 20 nodes ── -->
+  <div class="card">
+    <h2><span class="icon icon-blue">🔬</span> Дослідження: вплив кількості вузлів (5, 10, 20)</h2>
+    <p style="color:var(--text-dim);font-size:.85rem;margin-bottom:.8rem;">
+      Еталонна функція — многочлен Ньютона по 5 оригінальних точках. Для кожного варіанту рівномірно розбиваємо [1000, 16000] на N вузлів, обчислюємо значення еталонної функції і будуємо інтерполяцію заново.
+    </p>
+
+    <!-- Node strips for 5/10/20 -->
+    <div class="section-title">Розбиття на вузли</div>
+    <div style="display:flex;flex-direction:column;gap:.6rem;">
+      <div>
+        <div style="color:var(--accent);font-size:.75rem;font-weight:700;font-family:var(--mono);margin-bottom:.2rem;">5 вузлів</div>
+        <div class="node-strip" id="nodeStrip5"><div class="axis"></div></div>
+      </div>
+      <div>
+        <div style="color:var(--accent2);font-size:.75rem;font-weight:700;font-family:var(--mono);margin-bottom:.2rem;">10 вузлів</div>
+        <div class="node-strip" id="nodeStrip10"><div class="axis"></div></div>
+      </div>
+      <div>
+        <div style="color:var(--accent3);font-size:.75rem;font-weight:700;font-family:var(--mono);margin-bottom:.2rem;">20 вузлів</div>
+        <div class="node-strip" id="nodeStrip20"><div class="axis"></div></div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="section-title">Графіки</div>
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(this, 'tabStudyCurves')">Інтерполяційні криві</div>
+      <div class="tab" onclick="switchTab(this, 'tabStudyError')">Похибки</div>
+    </div>
+    <div id="tabStudyCurves" class="tab-content active">
+      <div class="chart-wrap">
+        <canvas id="chartStudyCurves" height="340"></canvas>
+      </div>
+    </div>
+    <div id="tabStudyError" class="tab-content">
+      <div class="chart-wrap">
+        <canvas id="chartStudyError" height="340"></canvas>
+      </div>
+    </div>
+
+    <!-- Prediction table -->
+    <div class="section-title">Прогноз t(6000) при різній кількості вузлів</div>
+    <table id="studyTable">
+      <thead>
+        <tr>
+          <th>Вузлів</th>
+          <th>Ньютон t(6000)</th>
+          <th>Факт. многочл. t(6000)</th>
+          <th>|Ньютон − Еталон|</th>
+          <th>|Факт. − Еталон|</th>
+          <th>Max похибка на [a,b]</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p class="error-note">Еталонне значення t(6000) обчислене по всіх 5 оригінальних точках.</p>
+  </div>
+
+  <!-- ── Research: original 3/4/5 from first points ── -->
+  <div class="card">
+    <h2><span class="icon icon-yellow">📋</span> Порівняння при різних підмножинах вузлів (3, 4, 5)</h2>
+    <p style="color:var(--text-dim);font-size:.85rem;margin-bottom:.8rem;">
+      Побудова інтерполяції на перших 3, 4 та 5 експериментальних точках.
+    </p>
+    <table id="researchTable">
+      <thead>
+        <tr>
+          <th>Вузли</th>
+          <th>Ньютон t(6000)</th>
+          <th>Факт. многочл.</th>
+          <th>|Різниця|</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════
+const DATA_X = [1000, 2000, 4000, 8000, 16000];
+const DATA_Y = [3, 5, 11, 28, 85];
+
+// ═══════════════════════════════════════════
+//  DIVIDED DIFFERENCES (for Newton)
+// ═══════════════════════════════════════════
+function dividedDiffTable(x, y) {
+  const n = x.length;
+  // dd[i][j] = divided difference of order j starting at index i
+  const dd = [];
+  for (let i = 0; i < n; i++) {
+    dd[i] = new Array(n).fill(0);
+    dd[i][0] = y[i];
+  }
+  for (let j = 1; j < n; j++) {
+    for (let i = 0; i < n - j; i++) {
+      dd[i][j] = (dd[i + 1][j - 1] - dd[i][j - 1]) / (x[i + j] - x[i]);
+    }
+  }
+  return dd;
+}
+
+// Newton forward interpolation using divided differences
+function newtonInterp(x, y, xVal) {
+  const dd = dividedDiffTable(x, y);
+  const n = x.length;
+  let result = dd[0][0];
+  let product = 1;
+  for (let k = 1; k < n; k++) {
+    product *= (xVal - x[k - 1]);
+    result += dd[0][k] * product;
+  }
+  return result;
+}
+
+// ═══════════════════════════════════════════
+//  FINITE DIFFERENCES (for factorial polynomials)
+// ═══════════════════════════════════════════
+function finiteDiffTable(y) {
+  const n = y.length;
+  const fd = [];
+  for (let i = 0; i < n; i++) {
+    fd[i] = new Array(n).fill(0);
+    fd[i][0] = y[i];
+  }
+  for (let j = 1; j < n; j++) {
+    for (let i = 0; i < n - j; i++) {
+      fd[i][j] = fd[i + 1][j - 1] - fd[i][j - 1];
+    }
+  }
+  return fd;
+}
+
+// Factorial polynomial t^(k) = t(t-1)(t-2)...(t-k+1)
+function factorialPoly(t, k) {
+  if (k === 0) return 1;
+  let result = 1;
+  for (let i = 0; i < k; i++) {
+    result *= (t - i);
+  }
+  return result;
+}
+
+function factorial(n) {
+  if (n <= 1) return 1;
+  let r = 1;
+  for (let i = 2; i <= n; i++) r *= i;
+  return r;
+}
+
+// Factorial polynomial interpolation on uniform grid
+// x0 = first node, h = step, yVals = function values at uniform nodes
+function factorialInterp(x0, h, yVals, xVal) {
+  const fd = finiteDiffTable(yVals);
+  const t = (xVal - x0) / h;
+  const n = yVals.length;
+  let result = 0;
+  for (let k = 0; k < n; k++) {
+    result += (fd[0][k] / factorial(k)) * factorialPoly(t, k);
+  }
+  return result;
+}
+
+// Create a uniform grid by interpolating original data with Newton
+function makeUniformGrid(origX, origY, numPoints) {
+  const a = origX[0];
+  const b = origX[origX.length - 1];
+  const h = (b - a) / (numPoints - 1);
+  const ux = [];
+  const uy = [];
+  for (let i = 0; i < numPoints; i++) {
+    const xi = a + i * h;
+    ux.push(xi);
+    // Use Newton polynomial from original data to get values at uniform nodes
+    uy.push(newtonInterp(origX, origY, xi));
+  }
+  return { x: ux, y: uy, h: h };
+}
+
+// ═══════════════════════════════════════════
+//  UI RENDERING
+// ═══════════════════════════════════════════
+
+// Render input table
+function renderInputTable() {
+  const tbody = document.querySelector('#inputTable tbody');
+  tbody.innerHTML = DATA_X.map((x, i) =>
+    `<tr><td>${x.toLocaleString()}</td><td>${DATA_Y[i]}</td></tr>`
+  ).join('');
+}
+
+// Render node strip visualisation
+function renderNodeStrip(xs, containerId) {
+  const strip = document.getElementById(containerId || 'nodeStrip');
+  // Keep the axis, remove old ticks
+  strip.querySelectorAll('.tick, .tick-label').forEach(el => el.remove());
+
+  const minX = xs[0];
+  const maxX = xs[xs.length - 1];
+  const range = maxX - minX;
+  const padPct = 5; // match the axis left/right of 5%
+
+  xs.forEach((x, i) => {
+    const pct = padPct + ((x - minX) / range) * (100 - 2 * padPct);
+
+    const tick = document.createElement('div');
+    tick.className = 'tick active';
+    tick.style.left = pct + '%';
+    strip.appendChild(tick);
+
+    const lbl = document.createElement('div');
+    lbl.className = 'tick-label';
+    lbl.style.left = pct + '%';
+    lbl.textContent = x >= 1000 ? (x / 1000) + 'k' : x;
+    strip.appendChild(lbl);
+  });
+}
+
+// Render divided differences table
+function renderDividedDiffTable() {
+  const dd = dividedDiffTable(DATA_X, DATA_Y);
+  const n = DATA_X.length;
+  let html = '<thead><tr><th>x</th><th>f(x)</th>';
+  for (let j = 1; j < n; j++) html += `<th>Δ<sup>${j}</sup></th>`;
+  html += '</tr></thead><tbody>';
+
+  for (let i = 0; i < n; i++) {
+    html += `<tr><td>${DATA_X[i].toLocaleString()}</td>`;
+    for (let j = 0; j < n; j++) {
+      if (j <= n - 1 - i) {
+        const cls = (i === 0 && j > 0) ? ' class="highlight"' : '';
+        html += `<td${cls}>${dd[i][j].toExponential(6)}</td>`;
+      } else {
+        html += '<td></td>';
+      }
+    }
+    html += '</tr>';
+  }
+  html += '</tbody>';
+  document.getElementById('diffTable').innerHTML = html;
+
+  // Show Newton polynomial formula
+  let formula = 'N(x) = ' + DATA_Y[0];
+  for (let k = 1; k < n; k++) {
+    const coeff = dd[0][k];
+    const sign = coeff >= 0 ? ' + ' : ' - ';
+    let terms = '';
+    for (let j = 0; j < k; j++) {
+      terms += `(x - ${DATA_X[j]})`;
+    }
+    formula += sign + Math.abs(coeff).toExponential(4) + '·' + terms;
+  }
+  document.getElementById('newtonFormula').textContent = formula;
+}
+
+// Render finite differences table for uniform grid
+function renderFiniteDiffTable() {
+  const numPts = DATA_X.length;
+  const uniform = makeUniformGrid(DATA_X, DATA_Y, numPts);
+  const fd = finiteDiffTable(uniform.y);
+  const n = numPts;
+
+  let html = '<thead><tr><th>t</th><th>x</th><th>f(x)</th>';
+  for (let j = 1; j < n; j++) html += `<th>Δ<sup>${j}</sup>f</th>`;
+  html += '</tr></thead><tbody>';
+
+  for (let i = 0; i < n; i++) {
+    html += `<tr><td>${i}</td><td>${uniform.x[i].toFixed(0)}</td>`;
+    for (let j = 0; j < n; j++) {
+      if (j <= n - 1 - i) {
+        const cls = (i === 0 && j > 0) ? ' class="highlight"' : '';
+        html += `<td${cls}>${fd[i][j].toFixed(4)}</td>`;
+      } else {
+        html += '<td></td>';
+      }
+    }
+    html += '</tr>';
+  }
+  html += '</tbody>';
+  document.getElementById('finiteDiffTable').innerHTML = html;
+
+  // Factorial polynomial formula
+  let formula = 'F(t) = ' + fd[0][0].toFixed(4);
+  for (let k = 1; k < n; k++) {
+    const coeff = fd[0][k] / factorial(k);
+    const sign = coeff >= 0 ? ' + ' : ' - ';
+    let tParts = [];
+    for (let j = 0; j < k; j++) {
+      tParts.push(j === 0 ? 't' : `(t-${j})`);
+    }
+    formula += sign + Math.abs(coeff).toFixed(6) + '·' + tParts.join('·');
+  }
+  formula += '\n\nде t = (x - ' + DATA_X[0] + ') / h,  h = ' + ((DATA_X[DATA_X.length-1] - DATA_X[0]) / (numPts - 1)).toFixed(0);
+  document.getElementById('factorialFormula').textContent = formula;
+}
+
+// ═══════════════════════════════════════════
+//  PREDICTION
+// ═══════════════════════════════════════════
+function runPrediction() {
+  const xVal = parseFloat(document.getElementById('predictN').value) || 6000;
+
+  // Newton
+  const valNewton = newtonInterp(DATA_X, DATA_Y, xVal);
+
+  // Factorial polynomial with uniform grid
+  const uniform = makeUniformGrid(DATA_X, DATA_Y, DATA_X.length);
+  const valFact = factorialInterp(uniform.x[0], uniform.h, uniform.y, xVal);
+
+  document.getElementById('resNewton').textContent = valNewton.toFixed(4) + ' мс';
+  document.getElementById('resFactorial').textContent = valFact.toFixed(4) + ' мс';
+  document.getElementById('resDiff').textContent = '|Δ| = ' + Math.abs(valNewton - valFact).toExponential(4);
+
+  renderMainChart(xVal, valNewton, valFact);
+  renderErrorChart();
+  renderNodesChart(xVal);
+  renderResearchTable(xVal);
+  renderStudy(xVal);
+}
+
+// ═══════════════════════════════════════════
+//  CHARTS
+// ═══════════════════════════════════════════
+let chartMain = null, chartError = null, chartNodes = null, chartInput = null;
+
+const CHART_DEFAULTS = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      labels: { color: '#8892b0', font: { family: 'JetBrains Mono', size: 11 } }
+    }
+  },
+  scales: {
+    x: {
+      ticks: { color: '#8892b0', font: { family: 'JetBrains Mono', size: 10 } },
+      grid: { color: 'rgba(42,48,80,.4)' }
+    },
+    y: {
+      ticks: { color: '#8892b0', font: { family: 'JetBrains Mono', size: 10 } },
+      grid: { color: 'rgba(42,48,80,.4)' }
+    }
+  }
+};
+
+function renderInputChart() {
+  const ctx = document.getElementById('chartInput').getContext('2d');
+  if (chartInput) chartInput.destroy();
+  chartInput = new Chart(ctx, {
+    type: 'scatter',
+    data: {
+      datasets: [{
+        label: 'Експериментальні точки',
+        data: DATA_X.map((x, i) => ({ x, y: DATA_Y[i] })),
+        backgroundColor: '#6ee7b7',
+        borderColor: '#6ee7b7',
+        pointRadius: 6,
+        pointHoverRadius: 8,
+        pointStyle: 'circle'
+      }]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      plugins: {
+        ...CHART_DEFAULTS.plugins,
+        legend: { display: false }
+      },
+      scales: {
+        x: { ...CHART_DEFAULTS.scales.x, title: { display: true, text: 'n', color: '#8892b0' } },
+        y: { ...CHART_DEFAULTS.scales.y, title: { display: true, text: 't (мс)', color: '#8892b0' } }
+      }
+    }
+  });
+}
+
+function renderMainChart(predX, predNewton, predFact) {
+  const ctx = document.getElementById('chartMain').getContext('2d');
+  if (chartMain) chartMain.destroy();
+
+  // Dense interpolation curve
+  const curvePoints = [];
+  const a = DATA_X[0], b = DATA_X[DATA_X.length - 1];
+  const step = (b - a) / 200;
+  for (let x = a; x <= b; x += step) {
+    curvePoints.push({ x, y: newtonInterp(DATA_X, DATA_Y, x) });
+  }
+
+  // Factorial curve (uniform grid)
+  const uniform = makeUniformGrid(DATA_X, DATA_Y, DATA_X.length);
+  const factCurve = [];
+  for (let x = a; x <= b; x += step) {
+    factCurve.push({ x, y: factorialInterp(uniform.x[0], uniform.h, uniform.y, x) });
+  }
+
+  chartMain = new Chart(ctx, {
+    type: 'scatter',
+    data: {
+      datasets: [
+        {
+          label: 'Ньютон',
+          data: curvePoints,
+          showLine: true,
+          borderColor: '#6ee7b7',
+          backgroundColor: 'rgba(110,231,183,.08)',
+          fill: true,
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0
+        },
+        {
+          label: 'Факторіальний',
+          data: factCurve,
+          showLine: true,
+          borderColor: '#38bdf8',
+          borderWidth: 2,
+          borderDash: [6, 3],
+          pointRadius: 0,
+          tension: 0
+        },
+        {
+          label: 'Експериментальні точки',
+          data: DATA_X.map((x, i) => ({ x, y: DATA_Y[i] })),
+          backgroundColor: '#fbbf24',
+          borderColor: '#fbbf24',
+          pointRadius: 7,
+          pointHoverRadius: 9,
+          pointStyle: 'circle'
+        },
+        {
+          label: 'Прогноз (Ньютон)',
+          data: [{ x: predX, y: predNewton }],
+          backgroundColor: '#f472b6',
+          borderColor: '#f472b6',
+          pointRadius: 9,
+          pointStyle: 'rectRot'
+        },
+        {
+          label: 'Прогноз (Факт.)',
+          data: [{ x: predX, y: predFact }],
+          backgroundColor: '#a78bfa',
+          borderColor: '#a78bfa',
+          pointRadius: 9,
+          pointStyle: 'triangle'
+        }
+      ]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      scales: {
+        x: { ...CHART_DEFAULTS.scales.x, title: { display: true, text: 'n (розмір вхідних даних)', color: '#8892b0' } },
+        y: { ...CHART_DEFAULTS.scales.y, title: { display: true, text: 't (мс)', color: '#8892b0' } }
+      }
+    }
+  });
+}
+
+function renderErrorChart() {
+  const ctx = document.getElementById('chartError').getContext('2d');
+  if (chartError) chartError.destroy();
+
+  const uniform = makeUniformGrid(DATA_X, DATA_Y, DATA_X.length);
+  const a = DATA_X[0], b = DATA_X[DATA_X.length - 1];
+  const step = (b - a) / 200;
+  const errData = [];
+
+  for (let x = a; x <= b; x += step) {
+    const valN = newtonInterp(DATA_X, DATA_Y, x);
+    const valF = factorialInterp(uniform.x[0], uniform.h, uniform.y, x);
+    errData.push({ x, y: Math.abs(valN - valF) });
+  }
+
+  chartError = new Chart(ctx, {
+    type: 'scatter',
+    data: {
+      datasets: [{
+        label: '|Ньютон - Факторіальний|',
+        data: errData,
+        showLine: true,
+        borderColor: '#f472b6',
+        backgroundColor: 'rgba(244,114,182,.1)',
+        fill: true,
+        borderWidth: 2,
+        pointRadius: 0
+      }]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      scales: {
+        x: { ...CHART_DEFAULTS.scales.x, title: { display: true, text: 'n', color: '#8892b0' } },
+        y: { ...CHART_DEFAULTS.scales.y, title: { display: true, text: 'Абсолютна похибка', color: '#8892b0' } }
+      }
+    }
+  });
+}
+
+function renderNodesChart(predX) {
+  const ctx = document.getElementById('chartNodes').getContext('2d');
+  if (chartNodes) chartNodes.destroy();
+
+  const colors = ['#6ee7b7', '#38bdf8', '#f472b6'];
+  const labels = ['3 вузли', '4 вузли', '5 вузлів'];
+  const nodeCounts = [3, 4, 5];
+  const datasets = [];
+
+  const a = DATA_X[0], b = DATA_X[DATA_X.length - 1];
+  const step = (b - a) / 200;
+
+  nodeCounts.forEach((nc, idx) => {
+    const xs = DATA_X.slice(0, nc);
+    const ys = DATA_Y.slice(0, nc);
+    const curve = [];
+    for (let x = a; x <= b; x += step) {
+      curve.push({ x, y: newtonInterp(xs, ys, x) });
+    }
+    datasets.push({
+      label: labels[idx],
+      data: curve,
+      showLine: true,
+      borderColor: colors[idx],
+      borderWidth: 2,
+      pointRadius: 0,
+      borderDash: idx === 0 ? [4, 4] : (idx === 1 ? [8, 4] : [])
+    });
+  });
+
+  // Original points
+  datasets.push({
+    label: 'Дані',
+    data: DATA_X.map((x, i) => ({ x, y: DATA_Y[i] })),
+    backgroundColor: '#fbbf24',
+    borderColor: '#fbbf24',
+    pointRadius: 6,
+    pointStyle: 'circle'
+  });
+
+  chartNodes = new Chart(ctx, {
+    type: 'scatter',
+    data: { datasets },
+    options: {
+      ...CHART_DEFAULTS,
+      scales: {
+        x: { ...CHART_DEFAULTS.scales.x, title: { display: true, text: 'n', color: '#8892b0' } },
+        y: { ...CHART_DEFAULTS.scales.y, title: { display: true, text: 't (мс)', color: '#8892b0' } }
+      }
+    }
+  });
+}
+
+// ═══════════════════════════════════════════
+//  RESEARCH TABLE
+// ═══════════════════════════════════════════
+function renderResearchTable(predX) {
+  const tbody = document.querySelector('#researchTable tbody');
+  let html = '';
+  [3, 4, 5].forEach(nc => {
+    const xs = DATA_X.slice(0, nc);
+    const ys = DATA_Y.slice(0, nc);
+    const valN = newtonInterp(xs, ys, predX);
+
+    const uniform = makeUniformGrid(xs, ys, nc);
+    const valF = factorialInterp(uniform.x[0], uniform.h, uniform.y, predX);
+
+    const diff = Math.abs(valN - valF);
+    html += `<tr>
+      <td>${nc}</td>
+      <td>${valN.toFixed(4)}</td>
+      <td>${valF.toFixed(4)}</td>
+      <td>${diff.toExponential(4)}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════
+//  STUDY: 5 / 10 / 20 NODES
+// ═══════════════════════════════════════════
+
+// Reference function: Newton interpolation through ALL 5 original points
+function referenceFunc(xVal) {
+  return newtonInterp(DATA_X, DATA_Y, xVal);
+}
+
+// Generate N uniform nodes on [a, b], evaluate reference function at each
+function generateStudyNodes(numNodes) {
+  const a = DATA_X[0];
+  const b = DATA_X[DATA_X.length - 1];
+  const h = (b - a) / (numNodes - 1);
+  const xs = [];
+  const ys = [];
+  for (let i = 0; i < numNodes; i++) {
+    const xi = a + i * h;
+    xs.push(xi);
+    ys.push(referenceFunc(xi));
+  }
+  return { x: xs, y: ys, h };
+}
+
+let chartStudyCurves = null, chartStudyError = null;
+
+function renderStudy(predX) {
+  const a = DATA_X[0], b = DATA_X[DATA_X.length - 1];
+  const STUDY_COUNTS = [5, 10, 20];
+  const colors = ['#6ee7b7', '#38bdf8', '#f472b6'];
+  const stripIds = ['nodeStrip5', 'nodeStrip10', 'nodeStrip20'];
+  const step = (b - a) / 300;
+
+  const refVal = referenceFunc(predX);
+
+  // Build data per node count
+  const studyData = STUDY_COUNTS.map((nc, idx) => {
+    const nodes = generateStudyNodes(nc);
+
+    // Newton interp curve
+    const newtonCurve = [];
+    let maxErr = 0;
+    for (let x = a; x <= b; x += step) {
+      const val = newtonInterp(nodes.x, nodes.y, x);
+      const refY = referenceFunc(x);
+      newtonCurve.push({ x, y: val });
+      const err = Math.abs(val - refY);
+      if (err > maxErr) maxErr = err;
+    }
+
+    // Factorial interp curve
+    const factCurve = [];
+    let maxErrFact = 0;
+    for (let x = a; x <= b; x += step) {
+      const val = factorialInterp(nodes.x[0], nodes.h, nodes.y, x);
+      const refY = referenceFunc(x);
+      factCurve.push({ x, y: val });
+      const err = Math.abs(val - refY);
+      if (err > maxErrFact) maxErrFact = err;
+    }
+
+    // Predictions at predX
+    const predNewton = newtonInterp(nodes.x, nodes.y, predX);
+    const predFact = factorialInterp(nodes.x[0], nodes.h, nodes.y, predX);
+
+    return {
+      nc, nodes, newtonCurve, factCurve,
+      predNewton, predFact,
+      maxErr: Math.max(maxErr, maxErrFact),
+      errNewton: Math.abs(predNewton - refVal),
+      errFact: Math.abs(predFact - refVal)
+    };
+  });
+
+  // ── Render node strips ──
+  STUDY_COUNTS.forEach((nc, idx) => {
+    const nodes = studyData[idx].nodes;
+    const strip = document.getElementById(stripIds[idx]);
+    strip.querySelectorAll('.tick, .tick-label').forEach(el => el.remove());
+    const minX = a, maxX = b, range = maxX - minX, padPct = 5;
+    nodes.x.forEach(x => {
+      const pct = padPct + ((x - minX) / range) * (100 - 2 * padPct);
+      const tick = document.createElement('div');
+      tick.className = 'tick active';
+      tick.style.left = pct + '%';
+      tick.style.borderColor = colors[idx];
+      tick.style.background = colors[idx];
+      tick.style.width = nc > 10 ? '8px' : '12px';
+      tick.style.height = nc > 10 ? '8px' : '12px';
+      tick.style.boxShadow = `0 0 6px ${colors[idx]}66`;
+      strip.appendChild(tick);
+    });
+    // Show labels only for first and last
+    [0, nodes.x.length - 1].forEach(i => {
+      const x = nodes.x[i];
+      const pct = padPct + ((x - minX) / range) * (100 - 2 * padPct);
+      const lbl = document.createElement('div');
+      lbl.className = 'tick-label';
+      lbl.style.left = pct + '%';
+      lbl.textContent = x >= 1000 ? (x / 1000).toFixed(1) + 'k' : x;
+      strip.appendChild(lbl);
+    });
+  });
+
+  // ── Curves chart ──
+  const ctxC = document.getElementById('chartStudyCurves').getContext('2d');
+  if (chartStudyCurves) chartStudyCurves.destroy();
+
+  // Reference curve
+  const refCurve = [];
+  for (let x = a; x <= b; x += step) {
+    refCurve.push({ x, y: referenceFunc(x) });
+  }
+
+  const curvesDatasets = [
+    {
+      label: 'Еталон (5 ориг. точок)',
+      data: refCurve,
+      showLine: true,
+      borderColor: '#fbbf24',
+      borderWidth: 2.5,
+      pointRadius: 0,
+      borderDash: [2, 2]
+    }
+  ];
+
+  studyData.forEach((sd, idx) => {
+    curvesDatasets.push({
+      label: `Ньютон (${sd.nc} вузлів)`,
+      data: sd.newtonCurve,
+      showLine: true,
+      borderColor: colors[idx],
+      borderWidth: 2,
+      pointRadius: 0
+    });
+    curvesDatasets.push({
+      label: `Факт. (${sd.nc} вузлів)`,
+      data: sd.factCurve,
+      showLine: true,
+      borderColor: colors[idx],
+      borderWidth: 1.5,
+      borderDash: [6, 3],
+      pointRadius: 0
+    });
+  });
+
+  // Original data points
+  curvesDatasets.push({
+    label: 'Вихідні дані',
+    data: DATA_X.map((x, i) => ({ x, y: DATA_Y[i] })),
+    backgroundColor: '#fbbf24',
+    borderColor: '#fbbf24',
+    pointRadius: 7,
+    pointStyle: 'circle'
+  });
+
+  chartStudyCurves = new Chart(ctxC, {
+    type: 'scatter',
+    data: { datasets: curvesDatasets },
+    options: {
+      ...CHART_DEFAULTS,
+      scales: {
+        x: { ...CHART_DEFAULTS.scales.x, title: { display: true, text: 'n', color: '#8892b0' } },
+        y: { ...CHART_DEFAULTS.scales.y, title: { display: true, text: 't (мс)', color: '#8892b0' } }
+      }
+    }
+  });
+
+  // ── Error chart ──
+  const ctxE = document.getElementById('chartStudyError').getContext('2d');
+  if (chartStudyError) chartStudyError.destroy();
+
+  const errorDatasets = [];
+  studyData.forEach((sd, idx) => {
+    const errPts = [];
+    for (let x = a; x <= b; x += step) {
+      const valN = newtonInterp(sd.nodes.x, sd.nodes.y, x);
+      const refY = referenceFunc(x);
+      errPts.push({ x, y: Math.abs(valN - refY) });
+    }
+    errorDatasets.push({
+      label: `|Похибка| ${sd.nc} вузлів (Ньютон)`,
+      data: errPts,
+      showLine: true,
+      borderColor: colors[idx],
+      borderWidth: 2,
+      pointRadius: 0,
+      backgroundColor: colors[idx] + '18',
+      fill: idx === 0
+    });
+
+    // Factorial error
+    const errPtsFact = [];
+    for (let x = a; x <= b; x += step) {
+      const valF = factorialInterp(sd.nodes.x[0], sd.nodes.h, sd.nodes.y, x);
+      const refY = referenceFunc(x);
+      errPtsFact.push({ x, y: Math.abs(valF - refY) });
+    }
+    errorDatasets.push({
+      label: `|Похибка| ${sd.nc} вузлів (Факт.)`,
+      data: errPtsFact,
+      showLine: true,
+      borderColor: colors[idx],
+      borderWidth: 1.5,
+      borderDash: [5, 3],
+      pointRadius: 0
+    });
+  });
+
+  chartStudyError = new Chart(ctxE, {
+    type: 'scatter',
+    data: { datasets: errorDatasets },
+    options: {
+      ...CHART_DEFAULTS,
+      scales: {
+        x: { ...CHART_DEFAULTS.scales.x, title: { display: true, text: 'n', color: '#8892b0' } },
+        y: { ...CHART_DEFAULTS.scales.y, title: { display: true, text: 'Абсолютна похибка', color: '#8892b0' } }
+      }
+    }
+  });
+
+  // ── Study table ──
+  const tbody = document.querySelector('#studyTable tbody');
+  tbody.innerHTML = studyData.map(sd => `<tr>
+    <td>${sd.nc}</td>
+    <td>${sd.predNewton.toFixed(4)}</td>
+    <td>${sd.predFact.toFixed(4)}</td>
+    <td>${sd.errNewton.toExponential(4)}</td>
+    <td>${sd.errFact.toExponential(4)}</td>
+    <td>${sd.maxErr.toExponential(4)}</td>
+  </tr>`).join('');
+}
+
+// ═══════════════════════════════════════════
+//  TABS
+// ═══════════════════════════════════════════
+function switchTab(el, tabId) {
+  el.parentElement.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  el.closest('.card').querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+}
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+renderInputTable();
+renderNodeStrip(DATA_X);
+renderInputChart();
+renderDividedDiffTable();
+renderFiniteDiffTable();
+runPrediction();
+</script>
+</body>
+</html>
